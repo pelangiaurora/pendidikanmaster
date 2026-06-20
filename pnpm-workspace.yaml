@@ -6,3 +6,4 @@ packages:
 allowBuilds:
   '@prisma/engines': false
   prisma: false
+  unrs-resolver: true
