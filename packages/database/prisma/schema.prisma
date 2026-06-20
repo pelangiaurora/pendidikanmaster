@@ -1,0 +1,180 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Tenant {
+  id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name        String
+  slug        String   @unique
+  domain      String?  @unique
+  logoUrl     String?
+  isActive    Boolean  @default(true)
+  planType    PlanType @default(FREE)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  users       User[]
+  settings    TenantSetting?
+
+  @@map("tenants")
+}
+
+model TenantSetting {
+  id              String          @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId        String          @unique @db.Uuid
+  institutionType InstitutionType @default(SCHOOL_SD)
+  primaryColor    String          @default("#6C63D8")
+  address         String?
+  phone           String?
+  email           String?
+  website         String?
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+
+  tenant          Tenant          @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@map("tenant_settings")
+}
+
+model User {
+  id           String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId     String    @db.Uuid
+  email        String
+  phone        String?
+  passwordHash String?
+  fullName     String
+  avatarUrl    String?
+  role         UserRole  @default(STUDENT)
+  isActive     Boolean   @default(true)
+  isVerified   Boolean   @default(false)
+  lastLoginAt  DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  tenant       Tenant      @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  profile      UserProfile?
+  sessions     Session[]
+  auditLogs    AuditLog[]
+
+  @@unique([tenantId, email])
+  @@index([tenantId])
+  @@index([tenantId, role])
+  @@index([email])
+  @@map("users")
+}
+
+model UserProfile {
+  id         String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId     String    @unique @db.Uuid
+  tenantId   String    @db.Uuid
+  nik        String?
+  nisn       String?
+  nuptk      String?
+  nidn       String?
+  nim        String?
+  birthDate  DateTime?
+  birthPlace String?
+  gender     Gender?
+  address    String?
+  city       String?
+  province   String?
+  postalCode String?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@map("user_profiles")
+}
+
+model Session {
+  id           String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId       String   @db.Uuid
+  tenantId     String   @db.Uuid
+  refreshToken String   @unique
+  deviceInfo   String?
+  ipAddress    String?
+  expiresAt    DateTime
+  createdAt    DateTime @default(now())
+
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([userId])
+  @@index([refreshToken])
+  @@map("sessions")
+}
+
+model AuditLog {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId  String   @db.Uuid
+  userId    String?  @db.Uuid
+  action    String
+  entity    String?
+  entityId  String?
+  oldValue  Json?
+  newValue  Json?
+  ipAddress String?
+  userAgent String?
+  createdAt DateTime @default(now())
+
+  user      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([tenantId])
+  @@index([tenantId, action])
+  @@index([tenantId, entity])
+  @@index([createdAt])
+  @@map("audit_logs")
+}
+
+enum PlanType {
+  FREE
+  BASIC
+  PROFESSIONAL
+  ENTERPRISE
+}
+
+enum InstitutionType {
+  SCHOOL_SD
+  SCHOOL_SMP
+  SCHOOL_SMA
+  SCHOOL_SMK
+  COLLEGE
+  POLYTECHNIC
+  ACADEMY
+  INSTITUTE
+  UNIVERSITY
+}
+
+enum UserRole {
+  SUPER_ADMIN
+  PLATFORM_ADMIN
+  RECTOR
+  VICE_RECTOR
+  DEAN
+  VICE_DEAN
+  DEPARTMENT_HEAD
+  LECTURER
+  STUDENT_COLLEGE
+  PRINCIPAL
+  VICE_PRINCIPAL
+  TEACHER
+  HOMEROOM_TEACHER
+  STUDENT
+  OPERATOR
+  TREASURER
+  STAFF
+  PARENT
+  ALUMNI
+  APPLICANT
+}
+
+enum Gender {
+  MALE
+  FEMALE
+}

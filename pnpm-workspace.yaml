@@ -3,3 +3,6 @@ packages:
   - 'apps/*/backend'
   - 'apps/*/frontend'
   - 'packages/*'
+allowBuilds:
+  '@prisma/engines': false
+  prisma: false
