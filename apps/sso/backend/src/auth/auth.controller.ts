@@ -20,6 +20,7 @@ import { AuthService } from './auth.service';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
+import { TenantGuard } from '../common/guards/tenant.guard';
 
 @ApiTags('Auth')
 @Controller('auth')
@@ -27,55 +28,37 @@ export class AuthController {
   constructor(private authService: AuthService) {}
 
   @Post('register')
+  @UseGuards(TenantGuard)
   @ApiOperation({ summary: 'Register user baru' })
   @ApiSecurity('x-tenant-id')
   @ApiResponse({ status: 201, description: 'User berhasil dibuat' })
   @ApiResponse({ status: 409, description: 'Email sudah terdaftar' })
-  async register(
-    @Body() dto: RegisterDto,
-    @Request() req: any,
-    @Headers('x-tenant-id') tenantHeader?: string,
-  ) {
-    const tenantId = req.tenantId ?? tenantHeader;
-    if (!tenantId) {
-      return { statusCode: 400, message: 'Tenant ID diperlukan' };
-    }
-    return this.authService.register(dto, tenantId);
+  async register(@Body() dto: RegisterDto, @Request() req: any) {
+    return this.authService.register(dto, req.tenantId);
   }
 
   @Post('login')
+  @UseGuards(TenantGuard)
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Login dan dapatkan JWT token' })
   @ApiSecurity('x-tenant-id')
-  @ApiResponse({
-    status: 200,
-    description: 'Login berhasil, token dikembalikan',
-  })
+  @ApiResponse({ status: 200, description: 'Login berhasil' })
   @ApiResponse({ status: 401, description: 'Email atau password salah' })
-  async login(
-    @Body() dto: LoginDto,
-    @Request() req: any,
-    @Headers('x-tenant-id') tenantHeader?: string,
-  ) {
-    const tenantId = req.tenantId ?? tenantHeader;
-    if (!tenantId) {
-      return { statusCode: 400, message: 'Tenant ID diperlukan' };
-    }
+  async login(@Body() dto: LoginDto, @Request() req: any) {
     const user = await this.authService.validateUser(
       dto.email,
       dto.password,
-      tenantId,
+      req.tenantId,
     );
     if (!user) {
       return { statusCode: 401, message: 'Email atau password salah' };
     }
-    return this.authService.login(user, tenantId);
+    return this.authService.login(user, req.tenantId);
   }
 
   @Post('refresh')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Refresh access token' })
-  @ApiResponse({ status: 200, description: 'Token baru dikembalikan' })
   async refresh(@Body() body: { refreshToken: string }) {
     return this.authService.refreshToken(body.refreshToken);
   }

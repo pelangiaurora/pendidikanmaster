@@ -7,6 +7,7 @@ import { AuthController } from './auth.controller';
 import { JwtStrategy } from './strategies/jwt.strategy';
 import { LocalStrategy } from './strategies/local.strategy';
 import { PrismaService } from '../prisma.service';
+import { TenantGuard } from '../common/guards/tenant.guard';
 
 @Module({
   imports: [
@@ -27,6 +28,7 @@ import { PrismaService } from '../prisma.service';
     PrismaService,
     JwtStrategy,
     LocalStrategy,
+    TenantGuard,
     ConfigService,
   ],
   exports: [AuthService, PrismaService],
