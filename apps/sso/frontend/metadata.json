@@ -1,0 +1,6 @@
+{
+  "name": "PendidikanMaster Login & Dashboard",
+  "description": "Halaman login, register, dan dashboard interaktif yang modern, bersih, dan responsif dari PendidikanMaster.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

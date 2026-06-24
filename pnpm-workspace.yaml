@@ -6,6 +6,8 @@ packages:
 allowBuilds:
   '@prisma/engines': false
   '@scarf/scarf': true
+  '@tailwindcss/oxide': true
   bcrypt: true
   prisma: false
+  sharp: true
   unrs-resolver: true
