@@ -8,6 +8,7 @@ import { JwtStrategy } from './strategies/jwt.strategy';
 import { LocalStrategy } from './strategies/local.strategy';
 import { PrismaService } from '../prisma.service';
 import { TenantGuard } from '../common/guards/tenant.guard';
+import { RedisService } from '../redis.service';
 
 @Module({
   imports: [
@@ -29,8 +30,9 @@ import { TenantGuard } from '../common/guards/tenant.guard';
     JwtStrategy,
     LocalStrategy,
     TenantGuard,
+    RedisService,
     ConfigService,
   ],
-  exports: [AuthService, PrismaService],
+  exports: [AuthService, PrismaService, RedisService],
 })
 export class AuthModule {}

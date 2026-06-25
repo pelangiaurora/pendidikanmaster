@@ -21,6 +21,7 @@ import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { TenantGuard } from '../common/guards/tenant.guard';
+import { Throttle } from '@nestjs/throttler';
 
 @ApiTags('Auth')
 @Controller('auth')
@@ -28,7 +29,9 @@ export class AuthController {
   constructor(private authService: AuthService) {}
 
   @Post('register')
+  @Throttle({ short: { ttl: 60000, limit: 3 } }) // max 3x per menit
   @UseGuards(TenantGuard)
+  // ... sisa kode
   @ApiOperation({ summary: 'Register user baru' })
   @ApiSecurity('x-tenant-id')
   @ApiResponse({ status: 201, description: 'User berhasil dibuat' })
@@ -38,7 +41,9 @@ export class AuthController {
   }
 
   @Post('login')
+  @Throttle({ short: { ttl: 60000, limit: 5 } }) // max 5x per menit
   @UseGuards(TenantGuard)
+  // ... sisa kode
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Login dan dapatkan JWT token' })
   @ApiSecurity('x-tenant-id')
