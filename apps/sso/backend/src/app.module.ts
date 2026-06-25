@@ -4,6 +4,7 @@ import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 import { APP_GUARD } from '@nestjs/core';
 import { AuthModule } from './auth/auth.module';
 import { TenantModule } from './tenant/tenant.module';
+import { StorageModule } from './storage/storage.module';
 import { RedisService } from './redis.service';
 
 @Module({
@@ -29,6 +30,7 @@ import { RedisService } from './redis.service';
 
     AuthModule,
     TenantModule,
+    StorageModule,
   ],
   providers: [
     RedisService,
