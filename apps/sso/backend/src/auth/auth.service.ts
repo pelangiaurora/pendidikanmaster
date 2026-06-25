@@ -91,11 +91,14 @@ export class AuthService {
   }
 
   async generateTokens(user: any) {
+    const jti = `${user.id}-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+
     const payload = {
       sub: user.id,
       email: user.email,
       role: user.role,
       tenantId: user.tenantId,
+      jti,
     };
 
     const accessToken = this.jwtService.sign(payload, {
@@ -106,9 +109,24 @@ export class AuthService {
       expiresIn: '7d',
       secret: this.configService.get('JWT_REFRESH_SECRET'),
     });
-
+    
     const expiresAt = new Date();
     expiresAt.setDate(expiresAt.getDate() + 7);
+    // Hapus session lama milik user ini dulu (max 5 session aktif)
+    const sessionCount = await this.prisma.session.count({
+      where: { userId: user.id },
+    });
+    if (sessionCount >= 5) {
+      // Hapus session terlama
+      const oldest = await this.prisma.session.findFirst({
+        where: { userId: user.id },
+        orderBy: { createdAt: 'asc' },
+      });
+      if (oldest) {
+        await this.prisma.session.delete({ where: { id: oldest.id } });
+      }
+    }
+
     await this.prisma.session.create({
       data: {
         userId: user.id,
