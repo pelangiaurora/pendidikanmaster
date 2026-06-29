@@ -1,0 +1,77 @@
+🔴 Prioritas 1 — SPMB/PPDB/PMB (2-3 sesi)
+Kenapa paling urgent?
+
+Musim penerimaan siswa/mahasiswa baru terjadi setahun sekali — kalau missed, harus tunggu tahun depan
+Ini modul pertama yang langsung menghasilkan uang untuk institusi (biaya pendaftaran)
+Bisa berdiri sendiri — institusi bisa beli hanya modul SPMB dulu tanpa modul lain
+
+Yang akan dibuat:
+- Formulir pendaftaran online
+- Upload dokumen persyaratan
+- Jalur masuk (reguler, prestasi, beasiswa)
+- Pembayaran biaya pendaftaran (VA, QRIS)
+- Pengumuman hasil (lulus, cadangan, tidak lulus)
+- Dashboard statistik pendaftar real-time
+
+🟡 Prioritas 2 — Notifikasi System (1 sesi)
+Kenapa sebelum Akademik?
+
+SPMB butuh notifikasi (konfirmasi pendaftaran, pengumuman hasil)
+Akademik butuh notifikasi (nilai keluar, tagihan)
+Keuangan butuh notifikasi (bukti bayar, jatuh tempo)
+Satu modul notifikasi melayani semua modul lain
+
+Yang akan dibuat:
+- Email (SMTP/Nodemailer)
+- Template notifikasi (HTML)
+- Queue system (BullMQ di atas Redis yang sudah ada)
+- In-app notification
+
+🟠 Prioritas 3 — Akademik Sekolah SD-SMA (3-4 sesi)
+Kenapa ini inti bisnis jangka panjang?
+
+Ini alasan utama customer tidak bisa berhenti berlangganan — data nilai, rapor, presensi sudah tersimpan di sini
+Customer churn rate sangat rendah karena switching cost tinggi
+
+Yang akan dibuat:
+- Master data (tahun ajaran, kelas, mata pelajaran)
+- Input nilai (tugas, UTS, UAS, P5)
+- Presensi siswa dan guru
+- Penjadwalan otomatis
+- Generate rapor PDF
+- QR verifikasi dokumen
+
+🟢 Prioritas 4 — Keuangan & Billing (2-3 sesi)
+Kenapa setelah Akademik?
+
+SPP/UKT terhubung dengan data siswa dari modul Akademik
+Payment gateway butuh data tenant yang solid
+
+Yang akan dibuat:
+- Tagihan SPP/UKT otomatis
+- Integrasi Midtrans (VA, QRIS, e-wallet)
+- Bukti bayar otomatis via notifikasi
+- Rekonsiliasi pembayaran
+
+🔵 Prioritas 5 — SIAKAD Perguruan Tinggi (3-4 sesi)
+- KRS, KHS, transkrip
+- Bimbingan akademik
+- Integrasi PDDikti
+- Yudisium & wisuda
+
+🟣 Prioritas 6 — HRIS (2 sesi)
+- Data kepegawaian
+- Cuti & absensi
+- Payroll dasar
+
+Rekomendasi urutan konkret:
+SPMB/PPDB (2-3 sesi)
+  → Notifikasi Email (1 sesi)
+    → Akademik Sekolah (3-4 sesi)
+      → Keuangan/Billing (2-3 sesi)
+        → SIAKAD PT (3-4 sesi)
+          → HRIS (2 sesi)
+            → WordPress Multisite (kapanpun)
+Alasan skip WordPress dulu:
+
+WordPress bisa ditambahkan kapan saja karena independen dari ERP. Yang lebih penting adalah membangun core bisnis ERP dulu supaya ada sesuatu yang bisa didemonstrasikan secara fungsional penuh ke calon customer.

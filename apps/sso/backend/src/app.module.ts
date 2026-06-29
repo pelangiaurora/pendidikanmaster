@@ -5,6 +5,7 @@ import { APP_GUARD } from '@nestjs/core';
 import { AuthModule } from './auth/auth.module';
 import { TenantModule } from './tenant/tenant.module';
 import { StorageModule } from './storage/storage.module';
+import { NotificationModule } from './notification/notification.module'
 import { RedisService } from './redis.service';
 
 @Module({
@@ -31,6 +32,7 @@ import { RedisService } from './redis.service';
     AuthModule,
     TenantModule,
     StorageModule,
+    NotificationModule,
   ],
   providers: [
     RedisService,
