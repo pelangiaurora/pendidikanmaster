@@ -27,7 +27,6 @@ export class NotificationService {
       },
     });
 
-    // ── Nodemailer SMTP ───────────────────────────────────────
     this.transporter = nodemailer.createTransport({
       host: this.configService.get('SMTP_HOST', 'smtp.gmail.com'),
       port: this.configService.get<number>('SMTP_PORT', 587),
