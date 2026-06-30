@@ -56,7 +56,7 @@ export class NotificationService {
   ): Promise<boolean> {
     try {
       await this.transporter.sendMail({
-        from: `"PendidikanMaster" <${this.configService.get('SMTP_USER')}>`,
+        from: `"Hasil Alami" <${this.configService.get('SMTP_USER')}>`,
         to,
         subject,
         html,
