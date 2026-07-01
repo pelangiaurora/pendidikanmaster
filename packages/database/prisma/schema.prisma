@@ -179,3 +179,159 @@ enum Gender {
   MALE
   FEMALE
 }
+
+// ═══════════════════════════════════════════════════════════
+// SPMB / PPDB — Penerimaan Peserta Didik/Mahasiswa Baru
+// ═══════════════════════════════════════════════════════════
+
+model SpmbPeriod {
+  id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId    String   @db.Uuid
+  name        String                      // contoh: "PPDB 2026/2027"
+  academicYear String                     // contoh: "2026/2027"
+  startDate   DateTime
+  endDate     DateTime
+  isActive    Boolean  @default(true)
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  paths       SpmbPath[]
+  applicants  SpmbApplicant[]
+
+  @@index([tenantId])
+  @@map("spmb_periods")
+}
+
+model SpmbPath {
+  id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId    String   @db.Uuid
+  periodId    String   @db.Uuid
+  name        String                      // Reguler, Prestasi, Beasiswa, Undangan
+  description String?
+  quota       Int      @default(0)
+  registrationFee Decimal @default(0) @db.Decimal(12, 2)
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  period      SpmbPeriod      @relation(fields: [periodId], references: [id], onDelete: Cascade)
+  applicants  SpmbApplicant[]
+
+  @@index([tenantId])
+  @@index([periodId])
+  @@map("spmb_paths")
+}
+
+model SpmbApplicant {
+  id              String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  tenantId        String   @db.Uuid
+  periodId        String   @db.Uuid
+  pathId          String   @db.Uuid
+  registrationNo  String                   // nomor pendaftaran otomatis
+  fullName        String
+  email           String
+  phone           String
+  nik             String?
+  birthPlace      String?
+  birthDate       DateTime?
+  gender          Gender?
+  address         String?
+  parentName      String?
+  parentPhone     String?
+  previousSchool  String?                  // asal sekolah/institusi
+  major           String?                  // pilihan jurusan/prodi
+  status          SpmbStatus @default(REGISTERED)
+  registeredAt    DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  period          SpmbPeriod        @relation(fields: [periodId], references: [id], onDelete: Cascade)
+  path            SpmbPath          @relation(fields: [pathId], references: [id], onDelete: Cascade)
+  documents       SpmbDocument[]
+  payments        SpmbPayment[]
+  result          SpmbResult?
+
+  @@unique([tenantId, registrationNo])
+  @@index([tenantId])
+  @@index([tenantId, status])
+  @@index([periodId])
+  @@map("spmb_applicants")
+}
+
+model SpmbDocument {
+  id           String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  applicantId  String   @db.Uuid
+  tenantId     String   @db.Uuid
+  type         String                      // KTP, KK, Ijazah, Rapor, Akta Lahir, Foto
+  fileKey      String                      // key MinIO
+  fileUrl      String
+  isVerified   Boolean  @default(false)
+  verifiedAt   DateTime?
+  notes        String?
+  uploadedAt   DateTime @default(now())
+
+  applicant    SpmbApplicant @relation(fields: [applicantId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([applicantId])
+  @@map("spmb_documents")
+}
+
+model SpmbPayment {
+  id            String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  applicantId   String   @db.Uuid
+  tenantId      String   @db.Uuid
+  amount        Decimal  @db.Decimal(12, 2)
+  status        PaymentStatus @default(PENDING)
+  method        String?                    // VA, QRIS, Transfer
+  externalRef   String?                    // ID dari payment gateway
+  paidAt        DateTime?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  applicant     SpmbApplicant @relation(fields: [applicantId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([applicantId])
+  @@map("spmb_payments")
+}
+
+model SpmbResult {
+  id            String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  applicantId   String   @unique @db.Uuid
+  tenantId      String   @db.Uuid
+  status        SpmbResultStatus
+  score         Decimal? @db.Decimal(6, 2)
+  notes         String?
+  announcedAt   DateTime?
+  reregisteredAt DateTime?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  applicant     SpmbApplicant @relation(fields: [applicantId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@map("spmb_results")
+}
+
+enum SpmbStatus {
+  REGISTERED      // Baru daftar
+  DOCUMENT_CHECK  // Verifikasi dokumen
+  PAYMENT_PENDING // Menunggu pembayaran
+  PAID            // Sudah bayar
+  SELECTION       // Proses seleksi
+  COMPLETED       // Selesai (hasil sudah keluar)
+}
+
+enum SpmbResultStatus {
+  LULUS
+  CADANGAN
+  TIDAK_LULUS
+}
+
+enum PaymentStatus {
+  PENDING
+  PAID
+  FAILED
+  EXPIRED
+}

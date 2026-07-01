@@ -5,7 +5,8 @@ import { APP_GUARD } from '@nestjs/core';
 import { AuthModule } from './auth/auth.module';
 import { TenantModule } from './tenant/tenant.module';
 import { StorageModule } from './storage/storage.module';
-import { NotificationModule } from './notification/notification.module'
+import { NotificationModule } from './notification/notification.module';
+import { SpmbModule } from './spmb/spmb.module';
 import { RedisService } from './redis.service';
 
 @Module({
@@ -33,13 +34,14 @@ import { RedisService } from './redis.service';
     TenantModule,
     StorageModule,
     NotificationModule,
+    SpmbModule,
   ],
   providers: [
     RedisService,
     // Aktifkan rate limiting secara global
     {
-      provide: APP_GUARD,
-      useClass: ThrottlerGuard,
+      provide: APP_GUARD, useClass: ThrottlerGuard 
+
     },
   ],
   exports: [RedisService],
